@@ -13,6 +13,7 @@
 
 #define MAX_LOADSTRING  100
 #define PATH_BUFFER_SIZE 4096
+#define MARGIN  20
 
 #pragma comment(linker,"\"/manifestdependency:type='win32' \
 name='Microsoft.Windows.Common-Controls' version='6.0.0.0' \
@@ -200,7 +201,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		iClientAreaHeight -= iClientAreaTop;
 		GetClientRect(hStatusBar, &rect);
 		iClientAreaHeight -= rect.bottom;
-		MoveWindow(hRichEdit, 20, iClientAreaTop + 20, iClientAreaWidth - 40, iClientAreaHeight - 40, TRUE);
+		MoveWindow(hRichEdit, 0, iClientAreaTop, iClientAreaWidth, iClientAreaHeight, TRUE);
+		GetClientRect(hRichEdit, &rect);
+		InflateRect(&rect, -MARGIN, -MARGIN);
+		SendMessage(hRichEdit, EM_SETRECT, 0, &rect);
 		break;
 
 	case WM_DROPFILES: {
