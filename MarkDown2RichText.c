@@ -22,8 +22,9 @@ get_line(char** input)
 	char* eol = strchr(pos, '\n');
 
 	if (!eol) {
-		line = (char*)malloc(length);
+		line = (char*)malloc(length + 1);
 		memcpy(line, pos, length);
+		line[length] = 0;
 		*input = pos + length;
 	}
 	else {
@@ -208,7 +209,7 @@ markdown2rtf(const char* md, const char* img_path)
 		free(line);
 	}
 
-	append_buffer("}\n");
+	append_buffer("}\n\0");
 	top_of_page = 1;
 	return rtf;
 }

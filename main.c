@@ -299,10 +299,11 @@ FileOpen(WCHAR* lpszTextFileName)
 		return 0;
 	}
 
-	char* md = malloc(dwFilesize + 1);
+	char* md = malloc(dwFilesize + 2);
 	//memset(md,0, dwFilesize + 1);
 	memcpy(md, pFileView, dwFilesize);
 	*(md + dwFilesize) = '\0';
+	*(md + dwFilesize + 1) = '\0';
 
 	UnmapViewOfFile(pFileView);
 	CloseHandle(hMap);
