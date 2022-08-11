@@ -151,7 +151,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			ShowLastError(L"RichEdit Creation Failed!");
 			return 0;
 		}
-		//DragAcceptFiles(hRichEdit, TRUE);
+		SendMessage(hRichEdit, EM_SETEVENTMASK, 0, ENM_LINK);
+		SendMessage(hRichEdit, EM_SETEDITSTYLEEX, 0, SES_EX_HANDLEFRIENDLYURL | SES_HYPERLINKTOOLTIPS);
 		break;
 
 	case WM_COMMAND:
@@ -214,6 +215,25 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			FileOpen(szNextFile);
 		}
 		DragFinish(hDrop);
+		break; }
+
+	case WM_NOTIFY: {
+		switch (((LPNMHDR)lParam)->code) {
+		case EN_LINK: {
+			ENLINK* enLinkInfo = (ENLINK*)lParam;
+			TEXTRANGE tr;
+			if (enLinkInfo->msg == WM_LBUTTONUP) {
+				//LONG len_link = enLinkInfo->chrg.cpMax - enLinkInfo->chrg.cpMin;
+				TCHAR szLink[1024];
+				tr.chrg = enLinkInfo->chrg;
+				tr.lpstrText = szLink;
+
+				SendMessage(hRichEdit, EM_GETTEXTRANGE, 0, &tr);
+				ShellExecuteW(NULL, L"open", szLink, NULL, NULL, SW_SHOWNORMAL);
+			}
+			break;
+		}
+		}
 		break; }
 
 	case WM_QUERYENDSESSION:
@@ -310,8 +330,8 @@ FileOpen(WCHAR* lpszTextFileName)
 	CloseHandle(hFile);
 
 	char* path = toU8(lpBufferPathWithoutFile);
-	char* rtf = markdown2rtf(md, path);
-	if (rtf == NULL) {
+	char* pRTF = markdown2rtf(md, path);
+	if (pRTF == NULL) {
 		SendMessageW(hStatusBar, SB_SETTEXT, 0, (LPARAM)L"Could not convert Markdown.");
 	}
 
@@ -320,10 +340,10 @@ FileOpen(WCHAR* lpszTextFileName)
 	StrCatW(szTitle, lpFilePart);
 	StrCatW(szTitle, L" - ");
 	StrCatW(szTitle, szAppName);
-	SendMessageW(hRichEdit, EM_SETTEXTEX, (WPARAM)&se, (LPARAM)rtf);
+	SendMessageW(hRichEdit, EM_SETTEXTEX, (WPARAM)&se, (LPARAM)pRTF);
 	SendMessageW(hMainWindow, WM_SETTEXT, (WPARAM)0, (LPARAM)szTitle);
 	free(md);
-	free(rtf);
+	free(pRTF);
 	free(path);
 }
 

@@ -134,14 +134,32 @@ append_buffer_line(char* line)
 			line = pos;
 		}
 		else if (strncmp(pos, "![", 2) == 0) {
-			pos += 2;
-			char* middle = strstr(pos, "](") + 2;
-			char* end = strstr(middle + 2, ")");
-			*end = 0;
-			append_image(middle);
+			char* middle = strstr(pos + 2, "](") + 2;
+			if (middle) {
+				char* end = strstr(middle + 2, ")");
+				*end = 0;
+				append_image(middle);
 
-			pos = end + 1;
-			line = pos;
+				pos = end + 1;
+				line = pos;
+			}
+		}
+		else if (strncmp(pos, "[", 1) == 0) {
+			char* middle = strstr(pos + 1, "](") + 2;
+			if (middle) {
+				char* end = strstr(middle + 2, ")");
+				*end = 0;
+				*(middle - 2) = 0;
+				//MessageBoxA(0, middle, pos+1, 0);
+				append_buffer("\\ul {\\field{\\*\\fldinst {HYPERLINK \"");
+				append_buffer(middle);
+				append_buffer("\" }}{\\fldrslt {");
+				append_buffer(pos + 1);
+				append_buffer("}}}\\ul0");
+
+				pos = end + 1;
+				line = pos;
+			}
 		}
 		pos += 1;
 	}
@@ -167,31 +185,31 @@ markdown2rtf(const char* md, const char* img_path)
 	{
 		if (strncmp(line, "# ", 2) == 0) {
 			if (top_of_page) {
-				append_buffer("{\\fs32\\cf1\\sb0\\sa100\\b1 ");
+				append_buffer("{\\fs32\\sb0\\sa100\\b1 ");
 				top_of_page = 0;
 			}
 			else
-				append_buffer("{\\par\\fs32\\cf1\\sb100\\sa100\\b1 ");
+				append_buffer("{\\par\\fs32\\sb100\\sa100\\b1 ");
 			append_buffer(line + 2);
 			append_buffer("\\par\\pard}\n");
 		}
 		else if (strncmp(line, "## ", 3) == 0) {
-			append_buffer("{\\par\\fs26\\cf1\\sb170\\sa100\\b1 ");
+			append_buffer("{\\par\\fs26\\sb170\\sa100\\b1 ");
 			append_buffer(line + 3);
 			append_buffer("\\par\\pard}\n");
 		}
 		else if (strncmp(line, "### ", 4) == 0) {
-			append_buffer("{\\par\\pard\\fs24\\cf1\\sb150\\sa50\\b1 ");
+			append_buffer("{\\par\\pard\\fs24\\sb150\\sa50\\b1 ");
 			append_buffer(line + 4);
 			append_buffer("\\par}\n");
 		}
 		else if (strncmp(line, "#### ", 5) == 0) {
-			append_buffer("{\\par\\pard\\fs23\\cf1\\sb120\\sa50\\b1 ");
+			append_buffer("{\\par\\pard\\fs23\\sb120\\sa50\\b1 ");
 			append_buffer(line + 5);
 			append_buffer("\\par}\n");
 		}
 		else if (strncmp(line, "##### ", 6) == 0) {
-			append_buffer("{\\par\\pard\\fs22\\cf1\\sb100\\sa50\\b1 ");
+			append_buffer("{\\par\\pard\\fs22\\sb100\\sa50\\b1 ");
 			append_buffer(line + 6);
 			append_buffer("\\par}\n");
 		}
